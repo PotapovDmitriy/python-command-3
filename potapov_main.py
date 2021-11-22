@@ -12,12 +12,14 @@ class Sneaker:
         self.price = price
         self.size = size
 
+    def __str__(self):
+        return self.name + ' ' + self.count + ' ' + self.creator + ' ' + self.price + ' ' + self.size
+
 
 class Storage:
     sneakers = []
 
     def add_sneaker(self, name, count, creator, price, size):
-
         for item in self.sneakers:
             if item.name == name and item.creator == creator and item.size == size:
                 item.count += count
@@ -31,23 +33,28 @@ class Storage:
             if item.name == name:
                 self.sneakers.pop(name)
 
+    def save(self):
+        file = open('text.txt', 'w')
+        for sneaker in self.sneakers:
+            file.write(str(sneaker) + '\n')
+
 print("команды: \n-- exit - закончить работу \n-- 1 - добавить товар \n--2 -вывести корзину")
 
 command_string = input("Введите команду")
-product_list = {}
+product_list = Storage()
 
 while command_string != "exit":
     if command_string == "1":
-        name = input("Введите имя")
-        count = input("Введите кол-во товаров")
-        creator = input("Введите производителя")
-        price = input("Введите цену")
-        size = input("Введите размер")
-        if name in product_list:
-            product_list[name] = count
-        else:
-            product_list[name] = count
+        name = input("Введите имя: \n")
+        count = input("Введите кол-во товаров: \n")
+        creator = input("Введите производителя: \n")
+        price = input("Введите цену: \n")
+        size = input("Введите размер: \n")
+        product_list.add_sneaker((name, count, creator, price, size))
     if command_string == "2":
-        print(product_list)
+        name = input("Введите имя: \n")
+        product_list.remove_sneaker_by_name((name))
+    if command_string == "3":
+        product_list.save()
 
     command_string = input("Введите команду")
