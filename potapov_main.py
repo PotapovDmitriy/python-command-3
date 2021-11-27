@@ -1,60 +1,114 @@
+import json
+
+
+def read_from_file(storage):
+    with open("test.json", "r") as file:
+        dict_json = json.load(file)
+        products = dict_json["sneakers"]
+
+        for product in products:
+            storage.add_sneaker(product["name"], product["count"], product["creator"],
+                                product["price"], product["size"], product["article"])
+
+
+def save_to_file(json_str):
+    if json_str is None:
+        print("Нечего сохранять")
+        return
+
+    with open("test.json", "w") as file:
+        json.dump(json_str, file)
+    print("сохранено")
+
+
 class Sneaker:
     name = ''
     count = 0
     creator = ''
     price = 0
     size = ''
+    article = ''
 
-    def __init__(self, name, count, creator, price, size):
+    def __init__(self, name, count, creator, price, size, article):
         self.name = name
-        self.count = count
+        self.count = int(count)
         self.creator = creator
-        self.price = price
+        self.price = int(price)
         self.size = size
+        self.article = article
+
+    def to_json(self):
+        return {"name": self.name,
+                "count": self.count,
+                "creator": self.creator,
+                "price": self.price,
+                "size": self.size,
+                "article": self.article}
 
     def __str__(self):
-        return self.name + ' ' + self.count + ' ' + self.creator + ' ' + self.price + ' ' + self.size
+        return self.name + ' ' + str(self.count) + ' ' + self.creator + ' ' + str(self.price) + ' ' + self.size
 
 
 class Storage:
-    sneakers = []
+    sneakers = {}
 
-    def add_sneaker(self, name, count, creator, price, size):
+    def add_sneaker(self, name, count, creator, price, size, article):
+
+        if article in self.sneakers.keys():
+            self.sneakers[article].count += int(count)
+            self.sneakers[article].price = int(price)
+            return
+
+        self.sneakers[article] = Sneaker(name, count, creator, price, size, article)
+
+    def remove_sneaker_by_name(self, article):
+        self.sneakers.pop(article)
+
+    def to_json(self):
+        if self.sneakers is None:
+            print("")
+            return None
+
+        sneakers_json_list = []
         for item in self.sneakers:
-            if item.name == name and item.creator == creator and item.size == size:
-                item.count += count
-                item.price = price
-                return
+            sneakers_json_list.append(self.sneakers[item].to_json())
+        return {"sneakers": sneakers_json_list}
 
-        self.sneakers.append(Sneaker(name, count, creator, price, size))
+    def display(self):
+        if len(self.sneakers) == 0:
+            print("Пусто")
+            return
 
-    def remove_sneaker_by_name(self, name):
-        for item in self.sneakers:
-            if item.name == name:
-                self.sneakers.pop(name)
+        for key in self.sneakers:
+            print(f"{key} - {self.sneakers[key]} ")
 
-    def save(self):
-        file = open('text.txt', 'w')
-        for sneaker in self.sneakers:
-            file.write(str(sneaker) + '\n')
 
-print("команды: \n-- exit - закончить работу \n-- 1 - добавить товар \n--2 -вывести корзину")
-
-command_string = input("Введите команду")
 product_list = Storage()
+read_from_file(product_list)
 
-while command_string != "exit":
+while True:
+    print("команды: \n-- exit - закончить работу \n-- 1 - добавить товар \n-- 2 -вывести корзину"
+          "\n-- 3 - удалить товар по артикулу \n-- 4 - сохранить в файл \n-- 5 - прочитать из файла ")
+    command_string = input("Введите команду \n")
+
+    if command_string == "exit":
+        save_to_file(product_list)
+        exit()
     if command_string == "1":
+        print("Если артикул совпадает  другим товаром, то их кол-во просто просуммируется!!!")
         name = input("Введите имя: \n")
         count = input("Введите кол-во товаров: \n")
         creator = input("Введите производителя: \n")
         price = input("Введите цену: \n")
         size = input("Введите размер: \n")
-        product_list.add_sneaker((name, count, creator, price, size))
+        article = input("Введите артикул (идентификатор товара на площадке): \n")
+        product_list.add_sneaker(name, count, creator, price, size, article)
     if command_string == "2":
-        name = input("Введите имя: \n")
-        product_list.remove_sneaker_by_name((name))
+        product_list.display()
     if command_string == "3":
-        product_list.save()
-
-    command_string = input("Введите команду")
+        name = input("Введите артикул: \n")
+        product_list.remove_sneaker_by_name(name)
+    if command_string == "4":
+        save_to_file(product_list.to_json())
+    if command_string == "5":
+        read_from_file(product_list)
