@@ -1,4 +1,5 @@
 import json
+import sql_service as sql
 
 
 def read_from_file(storage):
@@ -53,16 +54,18 @@ class Storage:
     sneakers = {}
 
     def add_sneaker(self, _name, _count, _creator, _price, _size, _article):
+        sql.add_sneaker(_name, _count, _creator, _price, _size)
 
-        if _article in self.sneakers.keys():
-            self.sneakers[_article].count += int(_count)
-            self.sneakers[_article].price = int(_price)
-            return
+        # if _article in self.sneakers.keys():
+        #     self.sneakers[_article].count += int(_count)
+        #     self.sneakers[_article].price = int(_price)
+        #     return
+        #
+        # self.sneakers[_article] = Sneaker(_name, _count, _creator, _price, _size, _article)
 
-        self.sneakers[_article] = Sneaker(_name, _count, _creator, _price, _size, _article)
-
-    def remove_sneaker_by_article(self, _article):
-        self.sneakers.pop(_article)
+    def remove_sneaker_by_name(self, _name):
+        sql.delete_by_name(_name)
+        # self.sneakers.pop(_name)
 
     def to_json(self):
         if self.sneakers is None:
@@ -75,12 +78,13 @@ class Storage:
         return {"sneakers": sneakers_json_list}
 
     def display(self):
-        if len(self.sneakers) == 0:
-            print("Пусто")
-            return
-
-        for key in self.sneakers:
-            print(f"{key} - {self.sneakers[key]} ")
+        sql.select_all()
+        # if len(self.sneakers) == 0:
+        #     print("Пусто")
+        #     return
+        #
+        # for key in self.sneakers:
+        #     print(f"{key} - {self.sneakers[key]} ")
 
 
 product_list = Storage()
@@ -106,8 +110,8 @@ while True:
     if command_string == "2":
         product_list.display()
     if command_string == "3":
-        article = input("Введите артикул: \n")
-        product_list.remove_sneaker_by_article(article)
+        name = input("Введите имя: \n")
+        product_list.remove_sneaker_by_name(name)
     if command_string == "4":
         save_to_file(product_list.to_json())
     if command_string == "5":
