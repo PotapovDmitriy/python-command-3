@@ -52,17 +52,17 @@ class Sneaker:
 class Storage:
     sneakers = {}
 
-    def add_sneaker(self, name, count, creator, price, size, article):
+    def add_sneaker(self, _name, _count, _creator, _price, _size, _article):
 
-        if article in self.sneakers.keys():
-            self.sneakers[article].count += int(count)
-            self.sneakers[article].price = int(price)
+        if _article in self.sneakers.keys():
+            self.sneakers[_article].count += int(_count)
+            self.sneakers[_article].price = int(_price)
             return
 
-        self.sneakers[article] = Sneaker(name, count, creator, price, size, article)
+        self.sneakers[_article] = Sneaker(_name, _count, _creator, _price, _size, _article)
 
-    def remove_sneaker_by_name(self, article):
-        self.sneakers.pop(article)
+    def remove_sneaker_by_article(self, _article):
+        self.sneakers.pop(_article)
 
     def to_json(self):
         if self.sneakers is None:
@@ -106,8 +106,8 @@ while True:
     if command_string == "2":
         product_list.display()
     if command_string == "3":
-        name = input("Введите артикул: \n")
-        product_list.remove_sneaker_by_name(name)
+        article = input("Введите артикул: \n")
+        product_list.remove_sneaker_by_article(article)
     if command_string == "4":
         save_to_file(product_list.to_json())
     if command_string == "5":
