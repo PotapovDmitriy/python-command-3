@@ -53,7 +53,7 @@ class Sneaker:
 class Storage:
     sneakers = {}
 
-    def add_sneaker(self, _name, _count, _creator, _price, _size, _article):
+    def add_sneaker(self, _name, _count, _creator, _price, _size):
         sql.add_sneaker(_name, _count, _creator, _price, _size)
 
         # if _article in self.sneakers.keys():
@@ -86,9 +86,9 @@ class Storage:
         # for key in self.sneakers:
         #     print(f"{key} - {self.sneakers[key]} ")
 
-
+#
 product_list = Storage()
-read_from_file(product_list)
+# read_from_file(product_list)
 
 while True:
     print("команды: \n-- exit - закончить работу \n-- 1 - добавить товар \n-- 2 -вывести корзину"
@@ -105,8 +105,7 @@ while True:
         creator = input("Введите производителя: \n")
         price = input("Введите цену: \n")
         size = input("Введите размер: \n")
-        article = input("Введите артикул (идентификатор товара на площадке): \n")
-        product_list.add_sneaker(name, count, creator, price, size, article)
+        product_list.add_sneaker(name, count, creator, price, size)
     if command_string == "2":
         product_list.display()
     if command_string == "3":
