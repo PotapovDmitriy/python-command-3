@@ -1,41 +1,11 @@
-import sqlite3
-from sqlalchemy import Integer, String, Column, ForeignKeyConstraint
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
-engine = create_engine("sqlite:///storage.db")
-Base = declarative_base()
+from database import Base, engine
+from models import creator, size, sneaker
 
-
-class Storage(Base):
-    __tablename__ = 'storage'
-    id = Column(Integer, primary_key=True, )
-    name = Column(String(100), nullable=False)
-    count_products = Column(Integer, nullable=False, default=1)
-    price = Column(Integer, nullable=False)
-    size_id = Column(Integer, nullable=False)
-    creator_id = Column(Integer, nullable=False)
-
-    __table_args__ = (
-        ForeignKeyConstraint(['size_id'], ['sizes.id']),
-        ForeignKeyConstraint(['creator_id'], ['creators.id'])
-    )
-
-
-class Size(Base):
-    __tablename__ = 'sizes'
-    id = Column(Integer, primary_key=True)
-    value = Column(String(100), nullable=False)
-    storages = relationship("Storage")
-
-
-class Creator(Base):
-    __tablename__ = 'creators'
-    id = Column(Integer, primary_key=True)
-    name = Column(String(100), nullable=False)
-    country = Column(String(100), nullable=False)
-    storages = relationship("Storage")
-
+Creator = creator.Creator
+Size = size.Size
+Storage = sneaker.Sneaker
 
 Base.metadata.create_all(engine)
 Session = sessionmaker()
@@ -45,7 +15,6 @@ session = Session()
 
 def add_sneaker(name, count, creator, price, size):
     creator_ids = session.query(Creator.id).filter(Creator.name == creator).one_or_none()
-
     if creator_ids is None:
         print("Такого производителя нет")
         return
@@ -54,44 +23,67 @@ def add_sneaker(name, count, creator, price, size):
     if size_ids is None:
         print("Такого размера нет")
         return
-    entity = session.query(Storage).filter(Storage.name == name).one_or_none()
-    if entity is not None:
-        entity.count_products += count
-        session.query(Storage).update(entity)
-        return True
-    entity = Storage(name=name, count_products=count, price=price, size_id=size_ids, creator_id=creator_ids)
-    session.add(entity)
+
+    count_products = session.query(Storage.count_products).filter(Storage.name == name).one_or_none()
+    if count_products is not None:
+        session.query(Storage).filter(Storage.name == name). \
+            update({"count_products": count_products[0] + count}, synchronize_session="fetch")
+    else:
+        entity = Storage(name=name, count_products=count, price=price, size_id=size_ids[0], creator_id=creator_ids[0])
+        session.add(entity)
+    session.commit()
 
 
-def select_all():
-    connection = sqlite3.connect('storage.db')
-    cursor = connection.cursor()
-    cursor.execute(f'''SELECT st.Name , st.CountProducts , st.Price , c.Name , s.ValueStr from Storage st, Creator c , Size s
-WHERE st.SizeId = s.Id and c.Id = st.CreatorId ;
-''')
-    sneakers = cursor.fetchall()
-    if sneakers is None or len(sneakers) == 0:
-        print("Товаров нет")
+def add_creator(name, country):
+    creator_ids = session.query(Creator.id) \
+        .filter(Creator.name == name, Creator.country == country) \
+        .one_or_none()
+    if creator_ids is not None:
+        print("Такой производитель уже есть")
         return
+    entity = Creator(name=name, country=country)
+    session.add(entity)
+    session.commit()
 
-    for item in sneakers:
-        print(item)
 
-    connection.commit()
-    connection.close()
+def add_size(value):
+    creator_ids = session.query(Size.id) \
+        .filter(Size.value == value) \
+        .one_or_none()
+    if creator_ids is not None:
+        print("Такой размер уже есть")
+        return
+    entity = Size(value=value)
+    session.add(entity)
+    session.commit()
+
+
+def print_all_sneakers():
+    entities = session.query(Storage).all()
+
+    for entity in entities:
+        size = session.query(Size.value).filter(Size.id == entity.size_id).one_or_none()
+        creator = session.query(Creator.name).filter(Creator.id == entity.creator_id).one_or_none()
+        print(str(entity) + f"; size: {size[0]}; creator: {creator[0]}")
+
+
+def select_all_sizes():
+    entities = session.query(Size).all()
+    return entities
+
+
+def select_all_creators():
+    entities = session.query(Creator).all()
+    return entities
 
 
 def delete_by_name(name):
-    connection = sqlite3.connect('storage.db')
-    cursor = connection.cursor()
-    cursor.execute(f'''Delete from Storage where Name = "{name}"   ''')
+    storage_id = session.query(Storage.id) \
+        .filter(Storage.name == name) \
+        .one_or_none()
+    if storage_id is None:
+        print("Такого товара нет")
+        return
 
-    connection.commit()
-    connection.close()
-
-# # add_sneaker("name", 1, "Nike", 123, 42)
-# select_all()
-#
-# delete_by_name("name")
-#
-# select_all()
+    session.query(Storage).filter(Storage.name == name) \
+        .delete(synchronize_session="fetch")

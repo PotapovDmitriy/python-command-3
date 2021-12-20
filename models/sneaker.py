@@ -1,12 +1,10 @@
 from sqlalchemy import Integer, String, Column, ForeignKeyConstraint
 
-import connection
-
-Base = connection.Base
+from database import Base
 
 
-class Storage(Base):
-    __tablename__ = 'storage'
+class Sneaker(Base):
+    __tablename__ = 'sneakers'
     id = Column(Integer, primary_key=True)
     name = Column(String(100), nullable=False)
     count_products = Column(Integer, nullable=False, default=1)
@@ -18,3 +16,6 @@ class Storage(Base):
         ForeignKeyConstraint(['size_id'], ['sizes.id']),
         ForeignKeyConstraint(['creator_id'], ['creators.id'])
     )
+
+    def __str__(self):
+        return f"name: {self.name}; count: {self.count_products}; price: {self.price}"

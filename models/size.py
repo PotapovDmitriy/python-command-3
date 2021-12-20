@@ -1,13 +1,13 @@
 from sqlalchemy import Integer, String, Column
 from sqlalchemy.orm import relationship
-
-import connection
-
-Base = connection.Base
+from database import Base
 
 
-class Creator(Base):
+class Size(Base):
     __tablename__ = 'sizes'
     id = Column(Integer, primary_key=True)
     value = Column(String(100), nullable=False)
-    storages = relationship("Storage")
+    storages = relationship("Sneaker")
+
+    def __str__(self):
+        return self.value
