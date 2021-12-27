@@ -13,8 +13,6 @@ from sql_models.sneaker import Sneaker
 
 app = FastAPI()
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
 
 
 @app.get("/")
@@ -66,3 +64,7 @@ async def add_creator(creator: InsertCreator):
 async def add_sneaker(sneaker: InsertSneaker):
     return sql.add_sneaker(Sneaker(name=sneaker.name, count_products=sneaker.count_products, size_id=sneaker.size_id,
                                    creator_id=sneaker.creator_id, price=sneaker.price))
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
